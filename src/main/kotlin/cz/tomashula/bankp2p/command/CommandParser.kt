@@ -22,7 +22,7 @@ class CommandParser
         val commandName = parts.firstOrNull()
         val args = if (parts.size > 1) parts.subList(1, parts.size) else emptyList()
 
-        val command = commands[commandName] ?: return buildError("Unknown command $commandName")
+        val command = commands[commandName] ?: return buildError("Unknown command '$commandName'")
 
         try
         {
