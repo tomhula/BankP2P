@@ -132,6 +132,8 @@ class WriteThroughCachedFileBankStorage(
 
     override suspend fun removeAccount(account: Int) = writeMutex.withLock {
         checkAccountExists(account)
+        if (accounts[account]!! != 0L)
+            throw AccountCannotBeRemovedException(account, accounts[account]!!)
         accounts.remove(account)
         deleteAccountThrough(account)
     }
