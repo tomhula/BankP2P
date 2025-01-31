@@ -4,7 +4,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-class CommandParser
+class CommandProcessor
 {
     private val commands = mutableMapOf<String, Command>()
 
