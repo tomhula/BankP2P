@@ -10,6 +10,7 @@ import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {}
 
+/* TODO: Use coroutines instead of threads */
 class TelnetServer(
     private val host: String,
     private val port: Int,
