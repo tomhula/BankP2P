@@ -5,14 +5,26 @@ data class Account(
     val bankCode: String,
 )
 {
+    init
+    {
+        check(number >= 0) { "Account number must be non-negative" }
+    }
+
     override fun toString() = "$number/$bankCode"
 
     companion object
     {
-        fun parse(account: String): Account
+        fun parse(account: String): Account?
         {
-            val (number, bankCode) = account.split("/")
-            return Account(number.toInt(), bankCode)
+            return try
+            {
+                val (number, bankCode) = account.split("/")
+                Account(number.toInt(), bankCode)
+            }
+            catch (e: Exception)
+            {
+                null
+            }
         }
     }
 }
