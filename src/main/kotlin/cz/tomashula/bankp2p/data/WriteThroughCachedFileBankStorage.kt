@@ -14,8 +14,8 @@ class WriteThroughCachedFileBankStorage(
     private val file: Path
 ) : BankStorage
 {
-    private val accounts: MutableMap<Int, Long> = mutableMapOf()
-    private var maxAccountNumber = MIN_ACCOUNT_NUMBER - 1
+    private val accounts: MutableMap<Int, LocalAccount> = mutableMapOf()
+    private var currentHighestAccountNumber = MIN_ACCOUNT_NUMBER - 1
 
 
     /* OPTIMIZE: Can be optimized by locking writing to individual accounts instead of the whole file.
@@ -36,37 +36,34 @@ class WriteThroughCachedFileBankStorage(
             if (line.startsWith(DELETED_ACCOUNT_CHAR))
                 return@forEach
             val (accountStr, balanceStr) = line.split(":")
-            val account = accountStr.toInt()
+            val accountNumber = accountStr.toInt()
             val balance = balanceStr.toLong()
 
-            if (account > maxAccountNumber)
-                maxAccountNumber = account
+            if (accountNumber > currentHighestAccountNumber)
+                currentHighestAccountNumber = accountNumber
 
-            accounts[account] = balance
+            accounts[accountNumber] = LocalAccount(accountNumber, balance)
         }
     }
 
-    /** Reloads the bank storage from the file. */
-    fun reload()
+    /** Refreshes the cache from the file. */
+    fun refresh()
     {
         accounts.clear()
-        maxAccountNumber = MIN_ACCOUNT_NUMBER - 1
+        currentHighestAccountNumber = MIN_ACCOUNT_NUMBER - 1
         init()
     }
 
-    private fun fixedLengthAccountString(account: Int, balance: Long) =
-        fixedLengthAccountNumberString(account) + SEPARATOR + fixedLengthBalanceString(balance)
+    private fun fixedLengthAccountString(account: LocalAccount) =
+        fixedLengthAccountNumberString(account.number) + SEPARATOR + fixedLengthBalanceString(account.balance)
     private fun padZeroes(number: Long, length: Int) = "%0${length}d".format(number)
     private fun fixedLengthAccountNumberString(account: Int) = padZeroes(account.toLong(), ACCOUNT_NUMBER_MAX_LENGTH)
     private fun fixedLengthBalanceString(balance: Long) = padZeroes(balance, BALANCE_MAX_LENGTH)
     private fun deletedAccountString(account: Int) =
         DELETED_ACCOUNT_CHAR.toString().repeat(ACCOUNT_NUMBER_MAX_LENGTH + 1 + BALANCE_MAX_LENGTH)
 
-    private fun checkAccountExists(account: Int)
-    {
-        if (account !in accounts)
-            throw AccountDoesNotExistException(account)
-    }
+    private fun getAccount(accountNumber: Int) =
+        accounts[accountNumber] ?: throw AccountDoesNotExistException(accountNumber)
 
     private fun checkAmountPositive(amount: Long, actionName: String)
     {
@@ -75,12 +72,12 @@ class WriteThroughCachedFileBankStorage(
     }
 
     /** WARNING: Not synchronized, must be synchronized by caller */
-    private fun updateBalanceThrough(account: Int, balance: Long)
+    private fun updateBalanceThrough(account: LocalAccount)
     {
         RandomAccessFile(file.toFile(), "rw").use { raf ->
-            val offset = (account - MIN_ACCOUNT_NUMBER) * LINE_LENGTH + ACCOUNT_NUMBER_MAX_LENGTH + SEPARATOR.length
+            val offset = (account.number - MIN_ACCOUNT_NUMBER) * LINE_LENGTH + ACCOUNT_NUMBER_MAX_LENGTH + SEPARATOR.length
             raf.seek(offset.toLong())
-            raf.write(fixedLengthBalanceString(balance).toByteArray(CHARSET))
+            raf.write(fixedLengthBalanceString(account.balance).toByteArray(CHARSET))
         }
     }
 
@@ -94,52 +91,44 @@ class WriteThroughCachedFileBankStorage(
     }
 
     override suspend fun createAccount() = writeMutex.withLock {
-        val account = ++maxAccountNumber
-        val balance = 0L
-        accounts[account] = balance
-        file.appendLines(listOf(fixedLengthAccountString(account, balance)), CHARSET)
-        account
+        val account = LocalAccount(++currentHighestAccountNumber)
+        accounts[account.number] = account
+        file.appendLines(listOf(fixedLengthAccountString(account)), CHARSET)
+        account.number
     }
 
-    override suspend fun deposit(account: Int, amount: Long) = writeMutex.withLock {
-        checkAccountExists(account)
+    override suspend fun deposit(accountNumber: Int, amount: Long) = writeMutex.withLock {
         checkAmountPositive(amount, "Deposit")
 
-        val oldBalance = accounts[account]!!
-        val newBalance = oldBalance + amount
-        accounts[account] = newBalance
-        updateBalanceThrough(account, newBalance)
+        val account = getAccount(accountNumber)
+        account.balance += amount
+        updateBalanceThrough(account)
     }
 
-    override suspend fun withdraw(account: Int, amount: Long) = writeMutex.withLock {
-        checkAccountExists(account)
+    override suspend fun withdraw(accountNumber: Int, amount: Long) = writeMutex.withLock {
         checkAmountPositive(amount, "Withdraw")
-        val oldBalance = accounts[account]!!
-        if (oldBalance < amount)
-            throw InsufficientFundsException(account, amount, oldBalance)
+        val account = getAccount(accountNumber)
+        if (account.balance < amount)
+            throw InsufficientFundsException(account.number, amount, account.balance)
 
-        val newBalance = oldBalance - amount
-        accounts[account] = newBalance
-        updateBalanceThrough(account, newBalance)
+        account.balance -= amount
+        updateBalanceThrough(account)
     }
 
-    override suspend fun balance(account: Int) = writeMutex.withLock {
-        if (account !in accounts)
-            throw AccountDoesNotExistException(account)
-
-        accounts[account]!!
+    override suspend fun balance(accountNumber: Int) = writeMutex.withLock {
+        accounts[accountNumber]?.balance ?: throw AccountDoesNotExistException(accountNumber)
     }
 
-    override suspend fun removeAccount(account: Int) = writeMutex.withLock {
-        checkAccountExists(account)
-        if (accounts[account]!! != 0L)
-            throw AccountCannotBeRemovedException(account, accounts[account]!!)
-        accounts.remove(account)
-        deleteAccountThrough(account)
+    override suspend fun removeAccount(accountNumber: Int) = writeMutex.withLock {
+        val account = getAccount(accountNumber)
+        if (account.balance != 0L)
+            throw AccountCannotBeRemovedException(accountNumber, account.balance)
+        accounts.remove(accountNumber)
+        deleteAccountThrough(accountNumber)
     }
 
     override suspend fun bankTotal() = writeMutex.withLock {
-        accounts.values.sum()
+        accounts.values.sumOf { it.balance }
     }
 
     override suspend fun bankClientCount() = writeMutex.withLock {

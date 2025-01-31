@@ -7,23 +7,23 @@ interface BankStorage
     /**
      * @throws AccountDoesNotExistException if the account does not exist.
      */
-    suspend fun deposit(account: Int, amount: Long)
+    suspend fun deposit(accountNumber: Int, amount: Long)
 
     /**
      * @throws AccountDoesNotExistException if the account does not exist.
      * @throws InsufficientFundsException if the account does not have enough funds.
      */
-    suspend fun withdraw(account: Int, amount: Long)
+    suspend fun withdraw(accountNumber: Int, amount: Long)
 
     /**
      * @throws AccountDoesNotExistException if the account does not exist.
      */
-    suspend fun balance(account: Int): Long
+    suspend fun balance(accountNumber: Int): Long
 
     /**
      * @throws AccountDoesNotExistException if the account does not exist.
      */
-    suspend fun removeAccount(account: Int)
+    suspend fun removeAccount(accountNumber: Int)
     suspend fun bankTotal(): Long
     suspend fun bankClientCount(): Int
 }

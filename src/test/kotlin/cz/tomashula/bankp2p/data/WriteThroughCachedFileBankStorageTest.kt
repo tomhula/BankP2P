@@ -34,7 +34,7 @@ internal class WriteThroughCachedFileBankStorageTest
     fun `depositing money increases balance`() = runBlocking {
         val accountId = storage.createAccount()
         storage.deposit(accountId, 1000)
-        storage.reload()
+        storage.refresh()
         assertEquals(1000, storage.balance(accountId))
     }
 
@@ -50,7 +50,7 @@ internal class WriteThroughCachedFileBankStorageTest
         val accountId = storage.createAccount()
         storage.deposit(accountId, 1000)
         storage.withdraw(accountId, 500)
-        storage.reload()
+        storage.refresh()
         assertEquals(500, storage.balance(accountId))
     }
 
@@ -75,7 +75,7 @@ internal class WriteThroughCachedFileBankStorageTest
         val accountId = storage.createAccount()
         storage.deposit(accountId, 1000)
         storage.removeAccount(accountId)
-        storage.reload()
+        storage.refresh()
         assertFailsWith<AccountDoesNotExistException> {
             runBlocking { storage.balance(accountId) }
         }
@@ -88,7 +88,7 @@ internal class WriteThroughCachedFileBankStorageTest
         storage.deposit(acc1, 2000)
         storage.deposit(acc2, 1000)
         storage.withdraw(acc1, 500)
-        storage.reload()
+        storage.refresh()
         assertEquals(2500, storage.bankTotal())
     }
 
@@ -97,7 +97,7 @@ internal class WriteThroughCachedFileBankStorageTest
         assertEquals(0, storage.bankClientCount())
         val acc1 = storage.createAccount()
         val acc2 = storage.createAccount()
-        storage.reload()
+        storage.refresh()
         assertEquals(2, storage.bankClientCount())
     }
 }
