@@ -1,5 +1,6 @@
 package cz.tomashula.bankp2p.data
 
+import cz.tomashula.bankp2p.config.Config
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -11,11 +12,15 @@ import kotlin.io.path.*
 private val logger = KotlinLogging.logger {}
 
 class WriteThroughCachedFileBankStorage(
-    private val file: Path
+    private val file: Path,
+    private val storageConfig: Config.FileStorage
 ) : BankStorage
 {
+    private val accountLength = ACCOUNT_NUMBER_MAX_LENGTH + storageConfig.accountNumberBalanceSeparator.length + BALANCE_MAX_LENGTH
+    private val lineLength = accountLength + System.lineSeparator().length
+
     private val accounts: MutableMap<Int, LocalAccount> = mutableMapOf()
-    private var currentHighestAccountNumber = MIN_ACCOUNT_NUMBER - 1
+    private var currentHighestAccountNumber = storageConfig.minAccountNumber - 1
 
 
     /* OPTIMIZE: Can be optimized by locking writing to individual accounts instead of the whole file.
@@ -25,6 +30,8 @@ class WriteThroughCachedFileBankStorage(
     /** Initializes the bank storage from the file. */
     fun init()
     {
+        currentHighestAccountNumber = storageConfig.minAccountNumber - 1
+
         if (!Files.exists(file))
         {
             Files.createFile(file)
@@ -33,7 +40,7 @@ class WriteThroughCachedFileBankStorage(
         }
 
         file.readLines().forEach { line ->
-            if (line.startsWith(DELETED_ACCOUNT_CHAR))
+            if (line.startsWith(storageConfig.deletedAccountChar))
                 return@forEach
             val (accountStr, balanceStr) = line.split(":")
             val accountNumber = accountStr.toInt()
@@ -50,17 +57,16 @@ class WriteThroughCachedFileBankStorage(
     fun refresh()
     {
         accounts.clear()
-        currentHighestAccountNumber = MIN_ACCOUNT_NUMBER - 1
         init()
     }
 
     private fun fixedLengthAccountString(account: LocalAccount) =
-        fixedLengthAccountNumberString(account.number) + SEPARATOR + fixedLengthBalanceString(account.balance)
+        fixedLengthAccountNumberString(account.number) + storageConfig.accountNumberBalanceSeparator + fixedLengthBalanceString(account.balance)
     private fun padZeroes(number: Long, length: Int) = "%0${length}d".format(number)
     private fun fixedLengthAccountNumberString(account: Int) = padZeroes(account.toLong(), ACCOUNT_NUMBER_MAX_LENGTH)
     private fun fixedLengthBalanceString(balance: Long) = padZeroes(balance, BALANCE_MAX_LENGTH)
     private fun deletedAccountString(account: Int) =
-        DELETED_ACCOUNT_CHAR.toString().repeat(ACCOUNT_NUMBER_MAX_LENGTH + 1 + BALANCE_MAX_LENGTH)
+        storageConfig.deletedAccountChar.toString().repeat(ACCOUNT_NUMBER_MAX_LENGTH + 1 + BALANCE_MAX_LENGTH)
 
     private fun getAccount(accountNumber: Int) =
         accounts[accountNumber] ?: throw AccountDoesNotExistException(accountNumber)
@@ -75,7 +81,7 @@ class WriteThroughCachedFileBankStorage(
     private fun updateBalanceThrough(account: LocalAccount)
     {
         RandomAccessFile(file.toFile(), "rw").use { raf ->
-            val offset = (account.number - MIN_ACCOUNT_NUMBER) * LINE_LENGTH + ACCOUNT_NUMBER_MAX_LENGTH + SEPARATOR.length
+            val offset = (account.number - storageConfig.minAccountNumber) * lineLength + ACCOUNT_NUMBER_MAX_LENGTH + storageConfig.accountNumberBalanceSeparator.length
             raf.seek(offset.toLong())
             raf.write(fixedLengthBalanceString(account.balance).toByteArray(CHARSET))
         }
@@ -84,7 +90,7 @@ class WriteThroughCachedFileBankStorage(
     private fun deleteAccountThrough(account: Int)
     {
         RandomAccessFile(file.toFile(), "rw").use { raf ->
-            val offset = (account - MIN_ACCOUNT_NUMBER) * LINE_LENGTH
+            val offset = (account - storageConfig.minAccountNumber) * lineLength
             raf.seek(offset.toLong())
             raf.write(deletedAccountString(account).toByteArray(CHARSET))
         }
@@ -140,10 +146,5 @@ class WriteThroughCachedFileBankStorage(
         private val CHARSET = Charsets.US_ASCII
         private const val ACCOUNT_NUMBER_MAX_LENGTH = Int.MAX_VALUE.toString().length
         private const val BALANCE_MAX_LENGTH = Long.MAX_VALUE.toString().length
-        private const val SEPARATOR = ":"
-        private const val DELETED_ACCOUNT_CHAR = '-'
-        private const val ACCOUNT_LENGTH = ACCOUNT_NUMBER_MAX_LENGTH + SEPARATOR.length + BALANCE_MAX_LENGTH
-        private val LINE_LENGTH = ACCOUNT_LENGTH + System.lineSeparator().length
-        private const val MIN_ACCOUNT_NUMBER = 10000
     }
 }

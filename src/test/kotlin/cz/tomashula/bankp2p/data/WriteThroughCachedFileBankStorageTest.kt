@@ -1,12 +1,24 @@
 package cz.tomashula.bankp2p.data
 
+import cz.tomashula.bankp2p.config.Config
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.test.*
 
 internal class WriteThroughCachedFileBankStorageTest
 {
+    companion object
+    {
+        val config = Config.FileStorage(
+            storageFilePath = Path("bank_storage.txt"),
+            minAccountNumber = 10000,
+            accountNumberBalanceSeparator = ":",
+            deletedAccountChar = 'X'
+        )
+    }
+
     private lateinit var storage: WriteThroughCachedFileBankStorage
     private lateinit var tempFile: Path
 
@@ -14,7 +26,7 @@ internal class WriteThroughCachedFileBankStorageTest
     fun setUp()
     {
         tempFile = Files.createTempFile("bank_storage", ".txt")
-        storage = WriteThroughCachedFileBankStorage(tempFile)
+        storage = WriteThroughCachedFileBankStorage(tempFile, config)
         storage.init()
     }
 
