@@ -8,3 +8,9 @@ abstract class Command(val name: String, val syntax: String)
      */
     abstract suspend fun execute(args: List<String>): String?
 }
+
+fun Command.checkArgsCount(args: List<String>, expected: Int)
+{
+    if (args.size != expected)
+        throw SyntaxError(this, args, "Expected $expected arguments")
+}

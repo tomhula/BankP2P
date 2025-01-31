@@ -1,20 +1,20 @@
 package cz.tomashula.bankp2p.command
 
-class BankCodeCmd(
-    private val bankCode: String,
+import cz.tomashula.bankp2p.data.BankStorage
+
+class BankTotalBalanceCmd(
+    private val storage: BankStorage
 ) : Command(NAME, NAME)
 {
     override suspend fun execute(args: List<String>): String
     {
         checkArgsCount(args, 0)
-        
-        return bankCode
+
+        return storage.bankTotal().toString()
     }
 
     companion object
     {
-        private const val NAME = "BC"
-
-        fun build() = NAME
+        private const val NAME = "BA"
     }
 }
