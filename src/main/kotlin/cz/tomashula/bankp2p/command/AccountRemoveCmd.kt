@@ -17,7 +17,7 @@ class AccountRemoveCmd(
         val accountStr = args[0]
         val account = Account.parse(accountStr) ?: throw SyntaxError(this, args, "Invalid account format")
 
-        return try
+        try
         {
             storage.removeAccount(account.number).toString()
         }
@@ -29,6 +29,8 @@ class AccountRemoveCmd(
         {
             throw CommandError(this, args, e.message!!)
         }
+
+        return null
     }
 
     companion object
