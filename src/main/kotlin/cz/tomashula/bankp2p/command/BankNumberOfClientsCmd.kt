@@ -15,6 +15,6 @@ class BankNumberOfClientsCmd(
 
     companion object
     {
-        private const val NAME = "BC"
+        private const val NAME = "BN"
     }
 }
