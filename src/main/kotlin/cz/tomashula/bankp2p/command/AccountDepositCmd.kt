@@ -18,7 +18,7 @@ class AccountDepositCmd(
 
         val amount = amountStr.toLongOrNull() ?: throw SyntaxError(this, args, "Amount must be a positive integer")
 
-        if (bankCode != this.bankCode)
+        if (account.bankCode != this.bankCode)
             throw RuntimeException("Bank proxy not implemented yet")
 
         try
