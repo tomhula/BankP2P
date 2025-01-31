@@ -27,7 +27,10 @@ class CommandParser
         try
         {
             val commandResult = command.execute(args)
-            return "${command.name} $commandResult"
+            return if (commandResult != null)
+                "${command.name} $commandResult"
+            else
+                command.name
         }
         catch (e: CommandError)
         {
