@@ -73,11 +73,20 @@ internal class WriteThroughCachedFileBankStorageTest
     @Test
     fun `removing an account makes it inaccessible`(): Unit = runBlocking {
         val accountId = storage.createAccount()
-        storage.deposit(accountId, 1000)
         storage.removeAccount(accountId)
         storage.refresh()
         assertFailsWith<AccountDoesNotExistException> {
-            runBlocking { storage.balance(accountId) }
+            storage.balance(accountId)
+        }
+    }
+
+    @Test
+    fun `removing an account with non-zero balance throws exception`(): Unit = runBlocking {
+        val accountId = storage.createAccount()
+        storage.deposit(accountId, 1000)
+        storage.refresh()
+        assertFailsWith<AccountCannotBeRemovedException> {
+            storage.removeAccount(accountId)
         }
     }
 
