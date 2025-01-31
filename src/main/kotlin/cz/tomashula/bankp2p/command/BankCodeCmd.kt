@@ -2,9 +2,9 @@ package cz.tomashula.bankp2p.command
 
 class BankCodeCmd(
     private val bankCode: String,
-) : Command(NAME)
+) : Command(NAME, NAME)
 {
-    override fun execute(args: List<String>): String
+    override suspend fun execute(args: List<String>): String
     {
         return bankCode
     }

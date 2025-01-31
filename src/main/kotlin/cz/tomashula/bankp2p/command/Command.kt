@@ -1,6 +1,6 @@
 package cz.tomashula.bankp2p.command
 
-abstract class Command(val name: String)
+abstract class Command(val name: String, val syntax: String)
 {
     /**
      * Executes the command with the given [args].
