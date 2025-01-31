@@ -16,7 +16,7 @@ class CommandParser
     /**
      * Returns the entire output of the matched command.
      */
-    fun execute(input: String): String
+    suspend fun execute(input: String): String
     {
         val parts = input.trim().split("\\s+".toRegex())
         val commandName = parts.firstOrNull()
