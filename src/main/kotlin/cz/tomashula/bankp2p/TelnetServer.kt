@@ -2,24 +2,27 @@ package cz.tomashula.bankp2p
 
 import cz.tomashula.bankp2p.server.ClientSession
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.*
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {}
 
-/* TODO: Use coroutines instead of threads */
 class TelnetServer(
     private val host: String,
     private val port: Int,
     private val onInput: (ClientSession, String) -> String?
 )
 {
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob() + CoroutineName("TelnetServer clients"))
+    @Volatile
     private var running: Boolean = false
     private lateinit var serverChannel: ServerSocketChannel
-    private val sessions = mutableMapOf<SocketChannel, ClientSession>()
+    private val sessions: MutableMap<SocketChannel, ClientSession> = ConcurrentHashMap<SocketChannel, ClientSession>()
 
     init
     {
@@ -27,15 +30,15 @@ class TelnetServer(
         require(host.isNotEmpty()) { "BindAddress must not be empty" }
     }
 
-    fun start()
+    suspend fun start()
     {
-        serverChannel = ServerSocketChannel.open()
-        serverChannel.bind(InetSocketAddress(host, port))
-        serverChannel.configureBlocking(true)
-        running = true
-        logger.info { "Server started on $host:$port" }
+        withContext(CoroutineName("TelnetServer") + Dispatchers.IO) {
+            serverChannel = ServerSocketChannel.open()
+            serverChannel.bind(InetSocketAddress(host, port))
+            serverChannel.configureBlocking(true)
+            running = true
+            logger.info { "Server started on $host:$port" }
 
-        thread {
             while (running)
             {
                 val clientChannel = serverChannel.accept()
@@ -57,13 +60,12 @@ class TelnetServer(
 
     private fun handleClient(clientChannel: SocketChannel)
     {
-
         val inetSocketAddress = clientChannel.remoteAddress as InetSocketAddress
         val clientSession = ClientSession(inetSocketAddress.hostString, inetSocketAddress.port)
         sessions[clientChannel] = clientSession
         logger.info { "Client connected: $clientSession" }
 
-        thread {
+        coroutineScope.launch(CoroutineName("Client: $clientSession")) {
             clientChannel.use { channel ->
                 val buffer = ByteBuffer.allocate(1024)
 
