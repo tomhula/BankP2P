@@ -6,6 +6,7 @@ import kotlin.time.Duration
 data class Config(
     val server: Server,
     val fileStorage: FileStorage,
+    val proxy: Proxy,
     val logLevel: String,
     val bankCode: String,
 )
@@ -24,6 +25,7 @@ data class Config(
 
     data class Proxy(
         val downstreamBankResponseTimeout: Duration,
-        val downstreamBankTcpTimout: Duration,
+        val downstreamBankTcpTimeout: Duration,
+        val scanPortRange: IntRange,
     )
 }
