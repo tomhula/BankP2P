@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.shadow)
+    application
 }
 
 group = "cz.tomashula"
@@ -20,6 +22,14 @@ dependencies {
     implementation(libs.slf4j.api)
     implementation(libs.logback.classic)
     implementation(libs.kotlin.logging)
+}
+
+application {
+    mainClass = "cz.tomashula.bankp2p.MainKt"
+}
+
+tasks.shadowJar {
+    archiveFileName = "${project.name}-${project.version}-executable.jar"
 }
 
 tasks.test {
