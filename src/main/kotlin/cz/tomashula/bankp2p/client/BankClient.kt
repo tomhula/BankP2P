@@ -12,10 +12,10 @@ import java.net.SocketTimeoutException
 import kotlin.time.Duration
 
 class BankClient(
-    private val host: String,
-    private val port: Int,
-    private val tcpTimeout: Duration,
-    private val bankResponseTimeout: Duration
+    val host: String,
+    val port: Int,
+    val tcpTimeout: Duration,
+    val bankResponseTimeout: Duration
 ) : AutoCloseable
 {
     private lateinit var clientSocket: Socket
