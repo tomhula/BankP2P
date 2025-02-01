@@ -1,2 +1,3 @@
 - [ ] Implement timeouts
 - [ ] Implement proxy
+- [ ] Implement logging
