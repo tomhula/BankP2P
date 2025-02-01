@@ -28,7 +28,7 @@ class FileConfigProvider(
             .addFileSource(File(path))
             .addPropertySource(EnvironmentVariableOverridePropertySource(true))
             .withExplicitSealedTypes()
-            .addDecoder(CharDecoder)
+            .addDecoders(listOf(CharDecoder, IntRangeDecoder))
             .removePreprocessors()
             // https://github.com/sksamuel/hoplite/issues/474
             // .addResolver(PortValidator())
