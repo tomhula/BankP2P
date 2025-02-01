@@ -22,13 +22,15 @@ class BankClient(
     private lateinit var printWriter: PrintWriter
     private lateinit var bufferedReader: BufferedReader
 
-    fun connect()
+    suspend fun connect()
     {
-        clientSocket = Socket()
-        clientSocket.connect(InetSocketAddress(host, port), tcpTimeout.inWholeMilliseconds.toInt())
-        clientSocket.soTimeout = bankResponseTimeout.inWholeMilliseconds.toInt()
-        printWriter = PrintWriter(clientSocket.getOutputStream(), true)
-        bufferedReader = clientSocket.getInputStream().bufferedReader()
+        withContext(Dispatchers.IO) {
+            clientSocket = Socket()
+            clientSocket.connect(InetSocketAddress(host, port), tcpTimeout.inWholeMilliseconds.toInt())
+            clientSocket.soTimeout = bankResponseTimeout.inWholeMilliseconds.toInt()
+            printWriter = PrintWriter(clientSocket.getOutputStream(), true)
+            bufferedReader = clientSocket.getInputStream().bufferedReader()
+        }
     }
 
     suspend fun request(command: String): String = withContext(Dispatchers.IO) {
