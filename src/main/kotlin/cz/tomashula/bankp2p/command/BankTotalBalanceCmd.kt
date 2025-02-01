@@ -16,5 +16,7 @@ class BankTotalBalanceCmd(
     companion object
     {
         private const val NAME = "BA"
+
+        fun build() = NAME
     }
 }
