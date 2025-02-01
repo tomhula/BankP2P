@@ -12,6 +12,8 @@ import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {}
 
+/* CONSIDER: ServerSocketChannel is intended for non-blocking code, however it is used blockingly here.
+*   Consider switching to ServerSocket or implementing the ServerSocketChannel properly */
 class TelnetServer(
     private val host: String,
     private val port: Int,
