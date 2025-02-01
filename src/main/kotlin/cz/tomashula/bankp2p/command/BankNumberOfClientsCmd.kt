@@ -15,7 +15,7 @@ class BankNumberOfClientsCmd(
 
     companion object
     {
-        private const val NAME = "BN"
+        const val NAME = "BN"
 
         fun build() = NAME
     }

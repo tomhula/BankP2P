@@ -35,7 +35,7 @@ class AccountDepositCmd(
 
     companion object
     {
-        private const val NAME = "AD"
+        const val NAME = "AD"
 
         fun build(account: Account, amount: Long): String
         {

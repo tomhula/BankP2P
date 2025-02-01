@@ -31,7 +31,7 @@ class AccountBalanceCmd(
 
     companion object
     {
-        private const val NAME = "AB"
+        const val NAME = "AB"
 
         fun build(account: Account) = "$NAME $account"
     }

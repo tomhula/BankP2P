@@ -16,7 +16,7 @@ class AccountCreateCmd(
 
     companion object
     {
-        private const val NAME = "AC"
+        const val NAME = "AC"
 
         fun build() = NAME
     }

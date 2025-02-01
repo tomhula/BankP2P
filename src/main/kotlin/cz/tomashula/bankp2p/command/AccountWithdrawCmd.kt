@@ -40,7 +40,7 @@ class AccountWithdrawCmd(
 
     companion object
     {
-        private const val NAME = "AW"
+        const val NAME = "AW"
 
         fun build(account: Account, amount: Long): String
         {

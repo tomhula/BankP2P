@@ -38,7 +38,7 @@ class AccountRemoveCmd(
 
     companion object
     {
-        private const val NAME = "AR"
+        const val NAME = "AR"
 
         fun build(account: Account) = "$NAME $account"
     }

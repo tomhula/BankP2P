@@ -13,7 +13,7 @@ class BankCodeCmd(
 
     companion object
     {
-        private const val NAME = "BC"
+        const val NAME = "BC"
 
         fun build() = NAME
     }
