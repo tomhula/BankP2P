@@ -11,6 +11,10 @@ import kotlin.io.path.*
 
 private val logger = KotlinLogging.logger {}
 
+/* FIX: The write-trough is not implemented properly. The caller has to wait for the update to be written to the file,
+    so the cache is effectively redundant. The methods should return the cache values immediately and
+    then queue the write to the file asynchronously.
+    However, I won't fix it for now, because it works and other stuff has higher priority. */
 class WriteThroughCachedFileBankStorage(
     private val file: Path,
     private val storageConfig: Config.FileStorage
