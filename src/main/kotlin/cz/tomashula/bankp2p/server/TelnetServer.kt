@@ -15,7 +15,7 @@ private val logger = KotlinLogging.logger {}
 class TelnetServer(
     private val host: String,
     private val port: Int,
-    private val onInput: (ClientSession, String) -> String?
+    private val onInput: suspend (ClientSession, String) -> String?
 )
 {
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob() + CoroutineName("TelnetServer clients"))
