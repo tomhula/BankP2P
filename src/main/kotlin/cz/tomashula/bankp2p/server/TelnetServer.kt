@@ -1,6 +1,5 @@
-package cz.tomashula.bankp2p
+package cz.tomashula.bankp2p.server
 
-import cz.tomashula.bankp2p.server.ClientSession
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import java.net.InetSocketAddress
@@ -8,7 +7,6 @@ import java.nio.ByteBuffer
 import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {}
 
