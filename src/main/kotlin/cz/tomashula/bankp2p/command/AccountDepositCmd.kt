@@ -37,12 +37,11 @@ class AccountDepositCmd(
     {
         private const val NAME = "AD"
 
-        fun build(account: Int, bankCode: String, amount: Long): String
+        fun build(account: Account, amount: Long): String
         {
-            check(account >= 0) { "Account must be non-negative" }
             check(amount >= 0) { "Amount must be non-negative" }
 
-            return "$NAME $account/$bankCode $amount"
+            return "$NAME $account $amount"
         }
     }
 }
