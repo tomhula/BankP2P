@@ -1,6 +1,7 @@
 package cz.tomashula.bankp2p.config
 
 import java.nio.file.Path
+import kotlin.time.Duration
 
 data class Config(
     val server: Server,
@@ -19,5 +20,10 @@ data class Config(
         val minAccountNumber: Int,
         val accountNumberBalanceSeparator: String,
         val deletedAccountChar: Char,
+    )
+
+    data class Proxy(
+        val downstreamBankResponseTimeout: Duration,
+        val downstreamBankTcpTimout: Duration,
     )
 }
