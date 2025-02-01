@@ -17,26 +17,45 @@ class BankFinder(
      */
     suspend fun findFirstBank(bankCode: String): BankClient?
     {
-        for (port in portRange)
+        val cachedPort = cache[bankCode]
+
+        if (cachedPort != null)
         {
-            val client = BankClient(bankCode, port, tcpTimout, responseTimout)
+            val port = cache[bankCode]!!
+            val bank = tryBank(bankCode, port)
+            if (bank != null)
+                return bank
+        }
 
-            try
-            {
-                client.connect()
-                val response = client.request(BankCodeCmd.build())
-                if (response != bankCode)
-                    continue
+        val portsToScan = if (cachedPort != null) portRange - cachedPort else portRange
 
-                cache[bankCode] = port
-                return client
-            }
-            catch (e: Exception)
-            {
-                continue
-            }
+        for (port in portsToScan)
+        {
+            val bank = tryBank(bankCode, port)
+            if (bank != null)
+                return bank
         }
 
         return null
+    }
+
+    private suspend fun tryBank(bankCode: String, port: Int): BankClient?
+    {
+        val bankClient = BankClient(bankCode, port, tcpTimout, responseTimout)
+
+        try
+        {
+            bankClient.connect()
+            val response = bankClient.request(BankCodeCmd.build())
+            if (response != bankCode)
+                return null
+
+            cache[bankCode] = port
+            return bankClient
+        }
+        catch (e: Exception)
+        {
+            return null
+        }
     }
 }
