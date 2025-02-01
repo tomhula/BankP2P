@@ -5,10 +5,9 @@ import com.sksamuel.hoplite.ExperimentalHoplite
 import com.sksamuel.hoplite.KebabCaseParamMapper
 import com.sksamuel.hoplite.addFileSource
 import com.sksamuel.hoplite.hocon.HoconParser
-import com.sksamuel.hoplite.resolver.context.ContextResolver
 import com.sksamuel.hoplite.resolver.context.EnvVarContextResolver
 import com.sksamuel.hoplite.resolver.context.ReferenceContextResolver
-import com.sksamuel.hoplite.resolver.validator.PortValidator
+import com.sksamuel.hoplite.sources.EnvironmentVariableOverridePropertySource
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Files
@@ -27,6 +26,7 @@ class FileConfigProvider(
         return ConfigLoaderBuilder.default()
             .addParser("conf", HoconParser())
             .addFileSource(File(path))
+            .addPropertySource(EnvironmentVariableOverridePropertySource(true))
             .withExplicitSealedTypes()
             .addDecoder(CharDecoder)
             .removePreprocessors()
