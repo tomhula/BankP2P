@@ -11,8 +11,8 @@ suspend fun Command.executeOnForeignBank(
     args: List<String>,
     bankCode: String,
     bankFinder: BankFinder,
-    action: suspend BankClient.() -> String
-): String
+    action: suspend BankClient.() -> String?
+): String?
 {
     val bankClient = bankFinder.findFirstBank(bankCode) ?: throw BankNotFoundError(this, args, bankCode)
 

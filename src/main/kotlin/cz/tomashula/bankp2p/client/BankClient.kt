@@ -33,7 +33,7 @@ class BankClient(
         }
     }
 
-    suspend fun request(command: String): String = withContext(Dispatchers.IO) {
+    suspend fun request(command: String): String? = withContext(Dispatchers.IO) {
         printWriter.println(command)
         val response = try
         {
@@ -47,7 +47,7 @@ class BankClient(
         val responseMessage = response.substring(3)
         if (response.startsWith("ER"))
             throw DownstreamBankError(host, port, command, responseMessage)
-        responseMessage
+        responseMessage.ifBlank { null }
     }
 
     suspend fun bankCode() = request(BankCodeCmd.build())
