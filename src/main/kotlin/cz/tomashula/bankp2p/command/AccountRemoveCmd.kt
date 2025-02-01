@@ -17,6 +17,9 @@ class AccountRemoveCmd(
         val accountStr = args[0]
         val account = Account.parse(accountStr) ?: throw SyntaxError(this, args, "Invalid account format")
 
+        if (account.bankCode != this.bankCode)
+            throw RuntimeException("Bank proxy not implemented yet")
+
         try
         {
             storage.removeAccount(account.number).toString()
