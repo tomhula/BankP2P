@@ -4,14 +4,18 @@ import cz.tomashula.bankp2p.client.BankClient
 import cz.tomashula.bankp2p.command.BankCodeCmd
 import kotlin.time.Duration
 
-class BankFinder
+class BankFinder(
+    var portRange: IntRange,
+    var tcpTimout: Duration,
+    var responseTimout: Duration
+)
 {
     private val cache: MutableMap<String, Int> = mutableMapOf()
 
     /**
      * Finds a running bank on the provided [bankCode] (address) and returns a connected [BankClient] instance, or `null` if no bank was found.
      */
-    suspend fun findFirstBank(bankCode: String, portRange: IntRange, tcpTimout: Duration, responseTimout: Duration): BankClient?
+    suspend fun findFirstBank(bankCode: String): BankClient?
     {
         for (port in portRange)
         {
