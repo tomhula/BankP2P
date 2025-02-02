@@ -33,7 +33,7 @@ class AccountBalanceCmd(
         {
             executeOnForeignBank(args, account.bankCode, bankFinder) {
                 accountBalance(account)
-            }
+            } ?: throw CommandError(this, args, "Downstream bank responded with an empty message.")
         }
     }
 
