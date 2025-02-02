@@ -2,6 +2,7 @@ package cz.tomashula.bankp2p.util
 
 import cz.tomashula.bankp2p.client.BankClient
 import cz.tomashula.bankp2p.client.DownstreamBankError
+import cz.tomashula.bankp2p.client.DownstreamBankProtocolError
 import cz.tomashula.bankp2p.command.BankNotFoundError
 import cz.tomashula.bankp2p.command.Command
 import cz.tomashula.bankp2p.command.CommandError
@@ -25,5 +26,9 @@ suspend fun Command.executeOnForeignBank(
     catch (e: DownstreamBankError)
     {
         throw CommandError(this, args, "Downstream bank error: ${e.message}")
+    }
+    catch (e: DownstreamBankProtocolError)
+    {
+        throw CommandError(this, args, e.message)
     }
 }

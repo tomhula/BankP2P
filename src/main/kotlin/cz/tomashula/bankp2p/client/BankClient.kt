@@ -44,9 +44,16 @@ class BankClient(
             throw DownstreamBankResponseTimeoutException(host, port, bankResponseTimeout)
         }
 
-        val responseMessage = response.substring(3)
-        if (response.startsWith("ER"))
+        val responseCodeMessage = response.trim().split(Regex("\\s+"), limit = 2)
+
+        if (responseCodeMessage.size != 2)
+            throw DownstreamBankProtocolError(host, port, command, response)
+
+        val (responseCode, responseMessage) = responseCodeMessage
+
+        if (responseCode.uppercase() == "ER")
             throw DownstreamBankError(host, port, command, responseMessage)
+
         responseMessage.ifBlank { null }
     }
 
