@@ -46,10 +46,11 @@ class BankClient(
 
         val responseCodeMessage = response.trim().split(Regex("\\s+"), limit = 2)
 
-        if (responseCodeMessage.size != 2)
+        if (responseCodeMessage.isEmpty())
             throw DownstreamBankProtocolError(host, port, command, response)
 
-        val (responseCode, responseMessage) = responseCodeMessage
+        val responseCode = responseCodeMessage[0]
+        val responseMessage = responseCodeMessage.getOrNull(1) ?: ""
 
         if (responseCode.uppercase() == "ER")
             throw DownstreamBankError(host, port, command, responseMessage)
