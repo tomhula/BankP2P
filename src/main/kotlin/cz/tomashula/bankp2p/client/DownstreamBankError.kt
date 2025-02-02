@@ -7,5 +7,5 @@ class DownstreamBankError(
     bankCode: String,
     port: Int,
     val command: String,
-    downStreamBankErrorMessage: String?
+    downStreamBankErrorMessage: String
 ) : BankClientException(bankCode, port, downStreamBankErrorMessage)
