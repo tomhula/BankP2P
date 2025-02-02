@@ -48,13 +48,17 @@ class BankFinder(
             bankClient.connect()
             val response = bankClient.request(BankCodeCmd.build())
             if (response != bankCode)
+            {
+                bankClient.close()
                 return null
+            }
 
             cache[bankCode] = port
             return bankClient
         }
         catch (e: Exception)
         {
+            bankClient.close()
             return null
         }
     }
