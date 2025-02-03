@@ -5,7 +5,17 @@
         </encoder>
     </appender>
 
-    <root level="debug">
+    <timestamp key="bySecond" datePattern="yyyy-MM-dd-HH-mm-ss"/>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>log-${bySecond}.txt</file>
+        <encoder>
+            <pattern>%date{HH:mm:ss} %-5level %-30logger{30} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
         <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
     </root>
 </configuration>
