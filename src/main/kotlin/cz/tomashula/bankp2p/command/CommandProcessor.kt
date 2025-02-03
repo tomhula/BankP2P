@@ -34,7 +34,7 @@ class CommandProcessor
         }
         catch (e: CommandError)
         {
-            return buildError(e.message ?: "Unknown error") // Shouldn't be null
+            return buildError(e.message)
         }
         catch (e: Exception)
         {
