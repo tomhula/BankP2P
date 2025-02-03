@@ -72,6 +72,7 @@ class TelnetServer(
                 while (channel.isOpen && running)
                 {
                     buffer.clear()
+                    // TODO: Commands are now per-packet instead of per-line.
                     val bytesRead = channel.read(buffer)
 
                     /* Connection close check */
