@@ -1,4 +1,4 @@
-- [ ] Implement timeouts
-- [ ] Implement proxy
-- [ ] Implement logging
-- [ ] Log to file
+- [X] Implement timeouts
+- [X] Implement proxy
+- [X] Implement logging
+- [X] Log to file
