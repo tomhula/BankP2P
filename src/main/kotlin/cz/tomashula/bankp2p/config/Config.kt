@@ -14,6 +14,7 @@ data class Config(
     data class Server(
         val host: String,
         val port: Int,
+        val clientInactivityTimeout: Duration,
         val clientThreadPoolSize: Int,
     )
 

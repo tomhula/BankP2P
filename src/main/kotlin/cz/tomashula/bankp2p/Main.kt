@@ -31,7 +31,12 @@ fun main()
     commandProcessor.registerCommand(BankTotalBalanceCmd(storage))
     commandProcessor.registerCommand(DebugCmd())
 
-    val server = TelnetServer(config.server.host, config.server.port, config.server.clientThreadPoolSize) { client, input ->
+    val server = TelnetServer(
+        config.server.host,
+        config.server.port,
+        config.server.clientInactivityTimeout,
+        config.server.clientThreadPoolSize
+    ) { client, input ->
         commandProcessor.execute(input)
     }
 

@@ -2,11 +2,14 @@ package cz.tomashula.bankp2p.server
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
+import java.io.BufferedWriter
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketTimeoutException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration
 
 private val logger = KotlinLogging.logger {}
 
@@ -14,8 +17,9 @@ private val logger = KotlinLogging.logger {}
 class TelnetServer(
     private val host: String,
     private val port: Int,
+    private val clientInactivityTimeout: Duration,
     private val clientsThreadPoolSize: Int,
-    private val onInput: suspend (ClientSession, String) -> String?
+    private val onInput: suspend (ClientSession, String) -> String?,
 )
 {
     @OptIn(DelicateCoroutinesApi::class)
@@ -72,13 +76,32 @@ class TelnetServer(
         logger.info { "Client connected: $clientSession" }
 
         coroutineScope.launch(CoroutineName("Client: $clientSession")) {
+            clientSocket.soTimeout = clientInactivityTimeout.inWholeMilliseconds.toInt()
             clientSocket.use { socket ->
                 val reader = socket.getInputStream().bufferedReader()
-                val writer = socket.getOutputStream().bufferedWriter()
+                val writer = socket.getOutputStream().writer() // No need for BufferedWriter, because responses are sent out immediately
 
                 while (!socket.isClosed && running)
                 {
-                    val input = reader.readLine() ?: break
+                    val input = try
+                    {
+                        reader.readLine() ?: break
+                    }
+                    catch (e: SocketTimeoutException)
+                    {
+                        if (!socket.isClosed)
+                        {
+                            writer.write("Took too long, closing connection.\r\n")
+                            writer.flush()
+                        }
+                        break
+                    }
+                    catch (e: Exception)
+                    {
+                        logger.error(e) { "Error reading from client: $clientSession" }
+                        break
+                    }
+
                     val inputTrimmed = input.trim()
 
                     val response = onInput(clientSession, inputTrimmed)
