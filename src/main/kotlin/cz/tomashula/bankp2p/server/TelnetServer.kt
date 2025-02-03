@@ -94,7 +94,7 @@ class TelnetServer(
                             val response = onInput(clientSession, trimmedLine)
                             logger.info { "Received input from $clientSession: '$trimmedLine'. Response: '$response'" }
                             if (response != null && channel.isOpen) {
-                                channel.write(ByteBuffer.wrap("${response}\n".toByteArray()))
+                                channel.write(ByteBuffer.wrap("${response}\r\n".toByteArray()))
                             }
                         }
                     }
