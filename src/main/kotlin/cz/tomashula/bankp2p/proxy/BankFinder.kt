@@ -15,21 +15,17 @@ class BankFinder(
     /**
      * Finds a running bank on the provided [bankCode] (address) and returns a connected [BankClient] instance, or `null` if no bank was found.
      */
+    // OPTIMIZE: Try all ports at once, and once one succeeds, cancel the rest.
     suspend fun findFirstBank(bankCode: String): BankClient?
     {
         val cachedPort = cache[bankCode]
 
-        if (cachedPort != null)
-        {
-            val port = cache[bankCode]!!
-            val bank = tryBank(bankCode, port)
-            if (bank != null)
-                return bank
-        }
+        val portsToScanOrdered = if (cachedPort != null)
+            listOf(cachedPort) + portRange.toList() - cachedPort // Just makes the cached port first in the list else
+        else
+            portRange.toList()
 
-        val portsToScan = if (cachedPort != null) portRange - cachedPort else portRange
-
-        for (port in portsToScan)
+        for (port in portsToScanOrdered)
         {
             val bank = tryBank(bankCode, port)
             if (bank != null)
