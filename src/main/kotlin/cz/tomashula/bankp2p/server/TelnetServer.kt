@@ -70,23 +70,34 @@ class TelnetServer(
         coroutineScope.launch(CoroutineName("Client: $clientSession")) {
             clientChannel.use { channel ->
                 val buffer = ByteBuffer.allocate(1024)
+                var leftover = ""
 
                 while (channel.isOpen && running)
                 {
                     buffer.clear()
-                    // TODO: Commands are now per-packet instead of per-line.
                     val bytesRead = channel.read(buffer)
 
-                    /* Connection close check */
                     if (bytesRead == -1)
                         break
 
                     buffer.flip()
-                    val input = String(buffer.array(), 0, buffer.limit()).trim()
-                    val response = onInput(clientSession, input)
-                    logger.info { "Received input from $clientSession: '$input'. Response: '$response'" }
-                    if (response != null && channel.isOpen)
-                        channel.write(ByteBuffer.wrap("${response}\n".toByteArray()))
+                    val currentInput = String(buffer.array(), 0, buffer.limit())
+                    val fullInput = leftover + currentInput
+
+                    val lines = fullInput.split("\n")
+                    leftover = lines.last() // Store incomplete line
+
+                    // Process all complete lines except the last one (which may be incomplete)
+                    lines.dropLast(1).forEach { line ->
+                        val trimmedLine = line.trim()
+                        if (trimmedLine.isNotEmpty()) {
+                            val response = onInput(clientSession, trimmedLine)
+                            logger.info { "Received input from $clientSession: '$trimmedLine'. Response: '$response'" }
+                            if (response != null && channel.isOpen) {
+                                channel.write(ByteBuffer.wrap("${response}\n".toByteArray()))
+                            }
+                        }
+                    }
                 }
             }
             sessions.remove(clientChannel)
