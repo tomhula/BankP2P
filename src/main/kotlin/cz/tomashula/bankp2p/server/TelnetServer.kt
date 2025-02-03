@@ -59,6 +59,7 @@ class TelnetServer(
 
     fun stop()
     {
+        logger.info { "Stopping server..." }
         running = false
         sessions.forEach { (clientSocket, clientSession) ->
             logger.info { "Closing client session: $clientSession" }
@@ -66,6 +67,7 @@ class TelnetServer(
         }
         sessions.clear()
         serverSocket.close()
+        logger.info { "Server stopped" }
     }
 
     private fun handleClient(clientSocket: Socket)
