@@ -13,7 +13,8 @@ data class Config(
 {
     data class Server(
         val host: String,
-        val port: Int
+        val port: Int,
+        val clientThreadPoolSize: Int,
     )
 
     data class FileStorage(

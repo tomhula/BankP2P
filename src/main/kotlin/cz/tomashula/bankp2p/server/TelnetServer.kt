@@ -15,10 +15,12 @@ private val logger = KotlinLogging.logger {}
 class TelnetServer(
     private val host: String,
     private val port: Int,
+    private val clientsThreadPoolSize: Int,
     private val onInput: suspend (ClientSession, String) -> String?
 )
 {
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob() + CoroutineName("TelnetServer clients"))
+    @OptIn(DelicateCoroutinesApi::class)
+    private val coroutineScope = CoroutineScope(newFixedThreadPoolContext(clientsThreadPoolSize, "TelnetServer clients thread") + SupervisorJob() + CoroutineName("TelnetServer clients"))
     @Volatile
     private var running: Boolean = false
     private lateinit var serverChannel: ServerSocketChannel

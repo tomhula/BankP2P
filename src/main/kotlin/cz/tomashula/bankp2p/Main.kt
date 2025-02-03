@@ -30,7 +30,7 @@ fun main()
     commandProcessor.registerCommand(BankNumberOfClientsCmd(storage))
     commandProcessor.registerCommand(BankTotalBalanceCmd(storage))
 
-    val server = TelnetServer(config.server.host, config.server.port) { client, input ->
+    val server = TelnetServer(config.server.host, config.server.port, config.server.clientThreadPoolSize) { client, input ->
         commandProcessor.execute(input)
     }
 
