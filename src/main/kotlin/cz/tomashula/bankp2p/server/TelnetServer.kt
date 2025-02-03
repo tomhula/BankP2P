@@ -3,15 +3,14 @@ package cz.tomashula.bankp2p.server
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import java.net.InetSocketAddress
-import java.nio.ByteBuffer
-import java.nio.channels.ServerSocketChannel
-import java.nio.channels.SocketChannel
+import java.net.ServerSocket
+import java.net.Socket
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 private val logger = KotlinLogging.logger {}
 
-/* CONSIDER: ServerSocketChannel is intended for non-blocking code, however it is used blockingly here.
-*   Consider switching to ServerSocket or implementing the ServerSocketChannel properly */
+// TODO: Rewrite to non-blocking using Java NIO (ServerSocketChannel or AsynchronousServerSocketChannel)
 class TelnetServer(
     private val host: String,
     private val port: Int,
@@ -20,11 +19,17 @@ class TelnetServer(
 )
 {
     @OptIn(DelicateCoroutinesApi::class)
-    private val coroutineScope = CoroutineScope(newFixedThreadPoolContext(clientsThreadPoolSize, "TelnetServer clients thread") + SupervisorJob() + CoroutineName("TelnetServer clients"))
+    private val coroutineScope = CoroutineScope(
+        newFixedThreadPoolContext(
+            clientsThreadPoolSize,
+            "TelnetServer clients thread"
+        ) + SupervisorJob() + CoroutineName("TelnetServer clients")
+    )
+
     @Volatile
     private var running: Boolean = false
-    private lateinit var serverChannel: ServerSocketChannel
-    private val sessions: MutableMap<SocketChannel, ClientSession> = ConcurrentHashMap<SocketChannel, ClientSession>()
+    private lateinit var serverSocket: ServerSocket
+    private val sessions: MutableMap<Socket, ClientSession> = ConcurrentHashMap()
 
     init
     {
@@ -35,16 +40,15 @@ class TelnetServer(
     suspend fun start()
     {
         withContext(CoroutineName("TelnetServer") + Dispatchers.IO) {
-            serverChannel = ServerSocketChannel.open()
-            serverChannel.bind(InetSocketAddress(host, port))
-            serverChannel.configureBlocking(true)
+            serverSocket = ServerSocket()
+            serverSocket.bind(InetSocketAddress(host, port))
             running = true
             logger.info { "Server started on $host:$port" }
 
             while (running)
             {
-                val clientChannel = serverChannel.accept()
-                handleClient(clientChannel)
+                val clientSocket = serverSocket.accept()
+                handleClient(clientSocket)
             }
         }
     }
@@ -52,56 +56,43 @@ class TelnetServer(
     fun stop()
     {
         running = false
-        sessions.forEach { (channel, clientSession) ->
+        sessions.forEach { (clientSocket, clientSession) ->
             logger.info { "Closing client session: $clientSession" }
-            channel.close()
+            clientSocket.close()
         }
         sessions.clear()
-        serverChannel.close()
+        serverSocket.close()
     }
 
-    private fun handleClient(clientChannel: SocketChannel)
+    private fun handleClient(clientSocket: Socket)
     {
-        val inetSocketAddress = clientChannel.remoteAddress as InetSocketAddress
-        val clientSession = ClientSession(inetSocketAddress.hostString, inetSocketAddress.port)
-        sessions[clientChannel] = clientSession
+        val inetSocketAddress = clientSocket.inetAddress
+        val clientSession = ClientSession(inetSocketAddress.hostAddress, clientSocket.port)
+        sessions[clientSocket] = clientSession
         logger.info { "Client connected: $clientSession" }
 
         coroutineScope.launch(CoroutineName("Client: $clientSession")) {
-            clientChannel.use { channel ->
-                val buffer = ByteBuffer.allocate(1024)
-                var leftover = ""
+            clientSocket.use { socket ->
+                val reader = socket.getInputStream().bufferedReader()
+                val writer = socket.getOutputStream().bufferedWriter()
 
-                while (channel.isOpen && running)
+                while (!socket.isClosed && running)
                 {
-                    buffer.clear()
-                    val bytesRead = channel.read(buffer)
+                    val input = reader.readLine() ?: break
+                    val inputTrimmed = input.trim()
 
-                    if (bytesRead == -1)
-                        break
+                    val response = onInput(clientSession, inputTrimmed)
+                    logger.info { "Request from $clientSession: '$inputTrimmed'. Response: '$response'" }
 
-                    buffer.flip()
-                    val currentInput = String(buffer.array(), 0, buffer.limit())
-                    val fullInput = leftover + currentInput
-
-                    val lines = fullInput.split("\n")
-                    leftover = lines.last() // Store incomplete line
-
-                    // Process all complete lines except the last one (which may be incomplete)
-                    lines.dropLast(1).forEach { line ->
-                        val trimmedLine = line.trim()
-                        if (trimmedLine.isNotEmpty()) {
-                            val response = onInput(clientSession, trimmedLine)
-                            logger.info { "Received input from $clientSession: '$trimmedLine'. Response: '$response'" }
-                            if (response != null && channel.isOpen) {
-                                channel.write(ByteBuffer.wrap("${response}\r\n".toByteArray()))
-                            }
-                        }
+                    if (response != null && !socket.isClosed)
+                    {
+                        writer.write("${response}\r\n")
+                        writer.flush()
                     }
                 }
             }
-            sessions.remove(clientChannel)
-            logger.info { "Client disconnected: $clientSession" }
         }
+        sessions.remove(clientSocket)
+        logger.info { "Client disconnected: $clientSession" }
     }
 }
