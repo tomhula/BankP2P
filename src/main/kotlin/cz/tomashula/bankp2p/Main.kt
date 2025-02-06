@@ -17,7 +17,15 @@ fun main()
     val bankCode = config.bankCode
     val rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger
     rootLogger.level = Level.toLevel(config.logLevel, Level.INFO)
-    val bankFinder = BankFinder(config.proxy.scanPortRange, config.proxy.downstreamBankTcpTimeout, config.proxy.downstreamBankResponseTimeout)
+    val bankFinder = BankFinder(
+        config.proxy.scanPortRange,
+        config.proxy.downstreamBankTcpTimeout,
+        config.proxy.downstreamBankResponseTimeout,
+        config.robbery.scanNetwork,
+        config.robbery.scanNetworkMask,
+        config.robbery.scannerThreadPoolSize
+    )
+
     val storage = WriteThroughCachedFileBankStorage(config.fileStorage.storageFilePath, config.fileStorage)
     storage.init()
     val commandProcessor = CommandProcessor()
@@ -30,6 +38,7 @@ fun main()
     commandProcessor.registerCommand(BankNumberOfClientsCmd(storage))
     commandProcessor.registerCommand(BankTotalBalanceCmd(storage))
     commandProcessor.registerCommand(DebugCmd())
+    commandProcessor.registerCommand(BankRobberyCmd(bankFinder, bankCode))
 
     val server = TelnetServer(
         config.server.host,
