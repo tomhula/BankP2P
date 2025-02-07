@@ -93,7 +93,7 @@ class BankRobberyCmd(
     }
 
     /* AI PROMPT: Now write a function, that generates all combinations (of all sizes) of an Iterable. */
-    fun <T> Iterable<T>.allCombinations(action: (Set<T>) -> Unit = {}): Set<Set<T>>
+    private fun <T> Iterable<T>.allCombinations(action: (Set<T>) -> Unit = {}): Set<Set<T>>
     {
         val inputList = this.toList()
         val result = mutableSetOf<Set<T>>()
