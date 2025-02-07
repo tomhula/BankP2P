@@ -116,8 +116,8 @@ class TelnetServer(
                     }
                 }
             }
+            sessions.remove(clientSocket)
+            logger.info { "Client disconnected: $clientSession" }
         }
-        sessions.remove(clientSocket)
-        logger.info { "Client disconnected: $clientSession" }
     }
 }
