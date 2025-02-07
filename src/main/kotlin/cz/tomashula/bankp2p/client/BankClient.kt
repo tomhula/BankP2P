@@ -49,16 +49,20 @@ class BankClient(
 
         logger.info { "Request to downstream bank $host:$port: '$command'. Response: '$response'" }
 
+        val commandCode = command.split(Regex("\\s+"), limit = 2)[0]
+
         val responseCodeMessage = response.trim().split(Regex("\\s+"), limit = 2)
 
         if (responseCodeMessage.isEmpty())
             throw DownstreamBankProtocolError(host, port, command, response)
 
-        val responseCode = responseCodeMessage[0]
-        val responseMessage = responseCodeMessage.getOrNull(1) ?: ""
+        val responseCode = responseCodeMessage[0].trim()
+        val responseMessage = responseCodeMessage.getOrNull(1)?.trim() ?: ""
 
-        if (responseCode.uppercase() == "ER")
+        if (responseCode == "ER")
             throw DownstreamBankError(host, port, command, responseMessage)
+        else if (responseCode != commandCode)
+            throw DownstreamBankProtocolError(host, port, command, response)
 
         responseMessage.ifBlank { null }
     }
