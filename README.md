@@ -20,7 +20,7 @@ Make sure the correct version of Java is on the path with `java --version`
 
 (the protocol is a modified version of the required one, however the implementation can be configured to comply with it)
 
-The communication between client and server is based on one-line ASCII text commands and one-line ASCII text responses transported over TCP.
+The communication between client and server is based on one-line UTF-8 text commands and one-line UTF-8 text responses transported over TCP.
 Commands are delimited by a new line, (line feed) each command receives an also single-line response.
 Banks can (but don't have to) send CRLF instead of plain LF to enhance user experience.
 
@@ -78,3 +78,8 @@ This bank server also supports these commands:
 |----------------|---------------------------------------------------------------------------------------------------------------------------------|------|-------------|---------------------------|
 | Bank robbery   | Scans a network for banks and plans which banks to rob to get as close to target money while robbing as few clients as possible | BR   | BR <target> | BR <rob-plan-description> |
 | Debug (thread) | Returns the name of the server thread that handles the client who issued the command                                            | DE   | DE thread   | DE <thread-name>          |
+
+## Sources
+
+Insights on possible algorithm for bank robbery:
+https://chatgpt.com/share/67a6653c-5e34-800e-8186-1662dcf4c88c
