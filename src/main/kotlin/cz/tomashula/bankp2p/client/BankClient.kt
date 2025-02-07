@@ -2,6 +2,7 @@ package cz.tomashula.bankp2p.client
 
 import cz.tomashula.bankp2p.Account
 import cz.tomashula.bankp2p.command.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
@@ -10,6 +11,8 @@ import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketTimeoutException
 import kotlin.time.Duration
+
+private val logger = KotlinLogging.logger {}
 
 class BankClient(
     val host: String,
@@ -43,6 +46,8 @@ class BankClient(
         {
             throw DownstreamBankResponseTimeoutException(host, port, bankResponseTimeout)
         }
+
+        logger.info { "Request to downstream bank $host:$port: '$command'. Response: '$response'" }
 
         val responseCodeMessage = response.trim().split(Regex("\\s+"), limit = 2)
 
