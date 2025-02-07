@@ -3,7 +3,7 @@
 
 A bank server that follows a text protocol and stores accounts by number and their integer balance.
 
-### Running
+## Running
 
 The program requires **Java 21 or newer**. 
 Make sure the correct version of Java is on the path with `java --version`
@@ -15,6 +15,15 @@ Make sure the correct version of Java is on the path with `java --version`
 5. A `bank.conf` configuration file will appear in the current directory.
 6. Open it and configure the values based on the comments and your preferences.
 7. Run the program again: `java -jar <file-name>`
+
+## Configuration
+
+A `bank.conf` file is created on the first run of the server.
+Each option in the config has a comment explaining what it does.
+**Each config option can be overridden with environment variables.**
+To override a config option set an environment variable `config.override.<config-option>` to the desired value.
+Example environment variable that overrides the storage file path to be `bank.data`:
+`config.override.storage.storage-file-path=bank.data`
 
 ## Protocol
 
