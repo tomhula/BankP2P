@@ -22,6 +22,9 @@ class AccountWithdrawCmd(
         val account = Account.parse(accountStr) ?: throw SyntaxError(this, args, "Invalid account format")
         val amount = amountStr.toLongOrNull() ?: throw SyntaxError(this, args, "Amount must be a positive integer")
 
+        if (amount < 0)
+            throw SyntaxError(this, args, "Amount must be a positive integer")
+
 
         return if (account.bankCode == this.bankCode)
             try
