@@ -26,10 +26,25 @@ Banks can (but don't have to) send CRLF instead of plain LF to enhance user expe
 
 ### Commands
 
-Commands have the following form:
-`<command-code> [arguments..]`
+`<>` - denotes required part  
+`[]` - denotes optional part
 
+Commands have the following form:
+```
+<command-code> [arguments..]
+```
 Commands are case-sensitive.
+When a command is successful the response has the following form:
+```
+<issued-command-code> [command-specific-message]
+```
+`<issued-command-code>` - is the code of the command that was issued.  
+If the command was not successful, an error of the following form is returned:
+```
+ER [message]
+```
+(the ER is also case-sensitive)
+
 These are all the commands:
 
 | Name                   | Description                                          | Code | Syntax                                   | Success response    |
@@ -46,14 +61,6 @@ These are all the commands:
 `<account-number>` - A positive 32bit (signed) integer number representing an account in a specific bank
 `<bank-code>` - A hostname (ip/domain) a bank is reachable at
 `<amount>` - A positive 64bit (signed) integer amount of money
-
-## Errors
-
-When a command results in an error, an error message in the following format is returned from the bank:
-```
-ER [message]
-```
-(the ER is also case-sensitive)
 
 ### Proxy
 
