@@ -83,3 +83,6 @@ This bank server also supports these commands:
 
 Insights on possible algorithm for bank robbery:
 https://chatgpt.com/share/67a6653c-5e34-800e-8186-1662dcf4c88c
+
+Configuration:
+https://github.com/tomhula/OpiNet
