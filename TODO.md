@@ -1,4 +1,0 @@
-- [X] Implement timeouts
-- [X] Implement proxy
-- [X] Implement logging
-- [X] Log to file
