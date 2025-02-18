@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory
 
 fun main()
 {
-    val configProvider = FileConfigProvider("bank.conf")
+    val configProvider = FileConfigProvider("bank.conf", "/bank.conf")
     val config = configProvider.getConfig()
     val bankCode = config.bankCode
     val rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger

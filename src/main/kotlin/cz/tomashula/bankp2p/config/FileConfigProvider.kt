@@ -14,8 +14,13 @@ import java.nio.file.Files
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Provides [Config] from a HOCON file on the filesystem on path [path].
+ * When [path] does not exist a default config is copied from [defaultConfigResourcePath] in resources.
+ */
 class FileConfigProvider(
-    private val path: String
+    private val path: String,
+    private val defaultConfigResourcePath: String
 ) : ConfigProvider
 {
     @OptIn(ExperimentalHoplite::class)
@@ -41,7 +46,7 @@ class FileConfigProvider(
 
     private fun createFileIfNotExists(): Boolean
     {
-        val defaultConfigResource = this::class.java.getResource(DEFAULT_CONFIG_RESOURCE_PATH)
+        val defaultConfigResource = this::class.java.getResource(defaultConfigResourcePath)
             ?: throw IllegalStateException("Default config resource not found")
 
         val file = File(path)
@@ -58,10 +63,5 @@ class FileConfigProvider(
         }
 
         return false
-    }
-
-    companion object
-    {
-        const val DEFAULT_CONFIG_RESOURCE_PATH = "/bank.conf"
     }
 }
