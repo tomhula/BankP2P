@@ -56,16 +56,16 @@ ER [message]
 
 These are all the commands:
 
-| Name                   | Description                                          | Code | Syntax                                   | Success response    |
-|------------------------|------------------------------------------------------|------|------------------------------------------|---------------------|
-| Bank code              | Returns the bank of the code                         | BC   | BC                                       | BC <bank-code>      |
-| Account create         | Creates a new account and returns its new number     | AC   | AC                                       | AC <account-number> |
-| Account deposit        | Deposit money to an account                          | AD   | AD <account-number>/<bank-code> <amount  | AD                  |
-| Account withdrawal     | Withdraw money from an account                       | AW   | AW <account-number>/<bank-code> <amount> | AW                  |
-| Account balance        | Returns the current balance of an account            | AB   | AB <account-number>/<bank-code>          | AB <balance>        |
-| Account remove         | Removes an account                                   | AR   | AR <account-number>/<bank-code>          | AR                  |
-| Bank (total) amount    | Returns the total amount of money stored in the bank | BA   | BA                                       | BA <number>         |
-| Bank number of clients | Returns the total number of clients in a bank        | BN   | BN                                       | BN <number>         |
+| Name                   | Description                                          | Code | Syntax                                      | Success response     |
+|------------------------|------------------------------------------------------|------|---------------------------------------------|----------------------|
+| Bank code              | Returns the bank of the code                         | BC   | BC                                          | BC \<bank-code>      |
+| Account create         | Creates a new account and returns its new number     | AC   | AC                                          | AC \<account-number> |
+| Account deposit        | Deposit money to an account                          | AD   | AD \<account-number>/\<bank-code> \<amount> | AD                   |
+| Account withdrawal     | Withdraw money from an account                       | AW   | AW \<account-number>/\<bank-code> \<amount> | AW                   |
+| Account balance        | Returns the current balance of an account            | AB   | AB \<account-number>/\<bank-code>           | AB \<balance>        |
+| Account remove         | Removes an account                                   | AR   | AR \<account-number>/\<bank-code>           | AR                   |
+| Bank (total) amount    | Returns the total amount of money stored in the bank | BA   | BA                                          | BA \<number>         |
+| Bank number of clients | Returns the total number of clients in a bank        | BN   | BN                                          | BN \<number>         |
 
 `<account-number>` - A positive 32bit (signed) integer number representing an account in a specific bank
 `<bank-code>` - A hostname (ip/domain) a bank is reachable at
@@ -83,10 +83,10 @@ It can (but does not have to) be negotiated when setting up a network.
 This bank server stores accounts and their balances to a file, which is configurable.
 This bank server also supports these commands:
 
-| Name           | Description                                                                                                                     | Code | Syntax      | Success response          |
-|----------------|---------------------------------------------------------------------------------------------------------------------------------|------|-------------|---------------------------|
-| Bank robbery   | Scans a network for banks and plans which banks to rob to get as close to target money while robbing as few clients as possible | BR   | BR <target> | BR <rob-plan-description> |
-| Debug (thread) | Returns the name of the server thread that handles the client who issued the command                                            | DE   | DE thread   | DE <thread-name>          |
+| Name           | Description                                                                                                                     | Code | Syntax       | Success response           |
+|----------------|---------------------------------------------------------------------------------------------------------------------------------|------|--------------|----------------------------|
+| Bank robbery   | Scans a network for banks and plans which banks to rob to get as close to target money while robbing as few clients as possible | BR   | BR \<target> | BR \<rob-plan-description> |
+| Debug (thread) | Returns the name of the server thread that handles the client who issued the command                                            | DE   | DE thread    | DE \<thread-name>          |
 
 ## Sources
 
